@@ -1,0 +1,90 @@
+
+import 'package:flutter/material.dart';
+
+import 'create_quiz.dart';
+import 'helper.dart';
+
+class TestKnowledgeAdmin extends StatefulWidget {
+  @override
+  State<TestKnowledgeAdmin> createState() => _TestKnowledgeAdminState();
+}
+
+class _TestKnowledgeAdminState extends State<TestKnowledgeAdmin> {
+  Stream? quizStream;
+  createquiz viewquiz = createquiz();
+
+
+  Widget quizlist(){
+    return Container(
+      child:StreamBuilder(stream: quizStream,builder: (context,snapshots){
+        return snapshots.data ==null? Container():
+       ListView.builder(
+          itemCount: snapshots.data.documents.length,
+        itemBuilder: (context,index){
+            return QuizTitle(quizImageUrl: snapshots.data.documents[index].data["quizImageUrl"],
+                quizTitle: snapshots.data.documents[index].data["quizTitle"],
+                quizDesc: snapshots.data.documents[index].data["quizDesc"]);
+
+        },
+      );
+      },
+      )
+    );
+  }
+ @override
+  void initState() {
+    // TODO: implement
+   viewquiz.getQuizData().then((val){
+     quizStream= val;
+
+   });
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Quiz View For Admin'),
+      ),
+      body: Container(),
+      floatingActionButton: FloatingActionButton(
+        child:Icon(Icons.add),
+        onPressed: (){
+          Navigator.push(context, MaterialPageRoute
+            (builder: (context) => CreateQuiz()));
+      },
+
+      ),
+    );
+  }
+}
+
+class QuizTitle extends StatelessWidget {
+
+final String quizImageUrl;
+final String quizTitle;
+final String quizDesc;
+QuizTitle({required this.quizImageUrl,required this.quizTitle,required this.quizDesc});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      child: Stack(
+        children: [
+          Image.network(quizImageUrl),
+          Container(
+            child: Column(children: [
+              Text(quizTitle),
+              Text(quizDesc)
+            ],),
+          )
+        ],
+      ),
+    );
+  }
+}
+
+getQuizData() async {
+    return await FirebaseFirestore.instance.collection("Quiz").snapshots();
+  }
